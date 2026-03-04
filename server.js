@@ -32,6 +32,7 @@ const next = require('next');
 const { Server } = require('socket.io');
 const path = require('path');
 const fs = require('fs').promises;
+const fsSync = require('fs');
 const { execSync } = require('child_process');
 const { PrismaClient } = require('@prisma/client');
 
@@ -63,6 +64,25 @@ app.prepare().then(async () => {
 
     const server = createServer((req, res) => {
         const parsedUrl = parse(req.url, true);
+
+        // Serve static files from the public folder (especially for encrypted uploads)
+        if (parsedUrl.pathname?.startsWith('/uploads/')) {
+            const filePath = path.join(process.cwd(), 'public', parsedUrl.pathname);
+            try {
+                const fileStream = fsSync.createReadStream(filePath);
+                fileStream.pipe(res);
+                fileStream.on('error', () => {
+                    res.writeHead(404, { 'Content-Type': 'text/plain' });
+                    res.end('File not found');
+                });
+            } catch (err) {
+                res.writeHead(404, { 'Content-Type': 'text/plain' });
+                res.end('File not found');
+            }
+            return;
+        }
+
+        // All other requests go through Next.js
         handle(req, res, parsedUrl);
     });
 

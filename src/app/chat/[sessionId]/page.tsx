@@ -99,9 +99,29 @@ export default function ChatPage() {
         const key = await generateKey(hash);
         setCryptoKey(key);
 
-        const newSocket = io();
+        // Connect to Socket.IO using explicit URL to ensure proper connection
+        const newSocket = io(window.location.origin, {
+          reconnection: true,
+          reconnectionDelay: 1000,
+          reconnectionDelayMax: 5000,
+          reconnectionAttempts: 5
+        });
+
+        // Log connection events for debugging
+        newSocket.on('connect', () => {
+          console.log('[Socket] Connected to server');
+          newSocket.emit('join-session', sessionId);
+        });
+
+        newSocket.on('connect_error', (error) => {
+          console.error('[Socket] Connection error:', error);
+        });
+
+        newSocket.on('disconnect', () => {
+          console.log('[Socket] Disconnected from server');
+        });
+
         setSocket(newSocket);
-        newSocket.emit('join-session', sessionId);
 
         newSocket.on('receive-message', async (encryptedMsg: any) => {
           try {

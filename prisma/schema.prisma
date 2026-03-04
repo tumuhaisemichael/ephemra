@@ -3,16 +3,17 @@ generator client {
 }
 
 datasource db {
-  // Provider and connection URL are pulled from environment variables so
-  // you can configure the database on the deployment server.  Example values
-  // (set in `.env`):
+  // Prisma does not allow using env() for the `provider` field.  You must
+  // set the provider here directly and regenerate the client if you change
+  // database engines.  The application will still read the connection URL
+  // (DATABASE_URL) from the environment, which is built automatically based
+  // on the DB_* variables in server.js.
   //
-  //   DATABASE_PROVIDER="postgresql"          // or mysql, sqlite, etc.
-  //   DATABASE_URL="postgresql://user:pass@host:5432/dbname?schema=public"
-  //
-  // Prisma will automatically read `DATABASE_URL` by default; setting
-  // `DATABASE_PROVIDER` is optional but can be useful if you swap engines.
-  provider = env("DATABASE_PROVIDER")
+  // Common values:
+  //   "mysql"          // MySQL or MariaDB
+  //   "postgresql"     // PostgreSQL
+  //   "sqlite"         // SQLite
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
