@@ -20,7 +20,10 @@ import {
   Mic,
   MicOff,
   PhoneCall,
-  X
+  X,
+  FileText,
+  Download,
+  File as FileIcon
 } from 'lucide-react';
 import { generateKey, encryptMessage, decryptMessage, encryptFile, decryptFile } from '@/lib/crypto';
 import Peer from 'simple-peer';
@@ -35,6 +38,7 @@ interface Message {
   text?: string;
   mediaUrl?: string;
   mediaType?: string;
+  fileName?: string;
   sender: 'me' | 'other' | 'system';
   timestamp: number;
 }
@@ -197,8 +201,24 @@ export default function ChatPage() {
       const data = await res.json();
       if (data.url) {
         const msgId = Math.random().toString(36).substr(2, 9);
-        socket.emit('send-message', { sessionId, message: { id: msgId, mediaUrl: data.url, mediaType: file.type, timestamp: Date.now() } });
-        setMessages(prev => [...prev, { id: msgId, mediaUrl: URL.createObjectURL(file), mediaType: file.type, sender: 'me', timestamp: Date.now() }]);
+        socket.emit('send-message', {
+          sessionId,
+          message: {
+            id: msgId,
+            mediaUrl: data.url,
+            mediaType: file.type,
+            fileName: file.name,
+            timestamp: Date.now()
+          }
+        });
+        setMessages(prev => [...prev, {
+          id: msgId,
+          mediaUrl: URL.createObjectURL(file),
+          mediaType: file.type,
+          fileName: file.name,
+          sender: 'me',
+          timestamp: Date.now()
+        }]);
       }
     } catch (err) { alert('Upload failed'); } finally { setIsUploading(false); }
   };
@@ -343,7 +363,21 @@ export default function ChatPage() {
               {msg.text && <p className={msg.sender === 'system' ? 'font-mono text-[10px]' : ''}>{msg.text}</p>}
               {msg.mediaUrl && (
                 <div className="media-preview">
-                  {msg.mediaType?.startsWith('image') ? <img src={msg.mediaUrl} alt="E2EE_BLOB" /> : <video src={msg.mediaUrl} controls />}
+                  {msg.mediaType?.startsWith('image') ? (
+                    <img src={msg.mediaUrl} alt="E2EE_BLOB" />
+                  ) : msg.mediaType?.startsWith('video') ? (
+                    <video src={msg.mediaUrl} controls />
+                  ) : (
+                    <div className="file-message">
+                      <div className="file-info">
+                        <FileText size={20} className="text-accent" />
+                        <span className="file-name">{msg.fileName || 'document.pdf'}</span>
+                      </div>
+                      <a href={msg.mediaUrl} download={msg.fileName || 'download'} className="btn-download">
+                        <Download size={16} />
+                      </a>
+                    </div>
+                  )}
                 </div>
               )}
               {msg.sender !== 'system' && (
@@ -360,7 +394,7 @@ export default function ChatPage() {
         <button className="input-action" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
           {isUploading ? <Zap className="animate-spin text-accent" size={20} /> : <Paperclip size={20} />}
         </button>
-        <input type="file" ref={fileInputRef} hidden onChange={handleFileUpload} accept="image/*,video/*" />
+        <input type="file" ref={fileInputRef} hidden onChange={handleFileUpload} accept="*/*" />
         <input
           type="text"
           placeholder={isOtherTyping ? "Peer is sending packets..." : "Transmit secure message..."}
@@ -409,6 +443,11 @@ export default function ChatPage() {
         .circular { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 0; }
         .btn-accent { background: var(--accent); color: #fff; border: none; cursor: pointer; }
         .flex { display: flex; } .items-center { align-items: center; } .gap-2 { gap: 0.5rem; } .mx-auto { margin: 0 auto; } .mb-6 { margin-bottom: 1.5rem; }
+        .file-message { display: flex; align-items: center; gap: 1rem; padding: 0.5rem; background: rgba(0,0,0,0.2); border-radius: 8px; min-width: 200px; }
+        .file-info { display: flex; align-items: center; gap: 0.75rem; flex: 1; overflow: hidden; }
+        .file-name { font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .btn-download { color: var(--accent); opacity: 0.6; transition: opacity 0.2s; }
+        .btn-download:hover { opacity: 1; }
       `}</style>
     </div>
   );
