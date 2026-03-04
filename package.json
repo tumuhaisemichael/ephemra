@@ -12,6 +12,7 @@
     "@prisma/client": "5.22.0",
     "@types/simple-peer": "^9.11.9",
     "buffer": "^6.0.3",
+    "dotenv": "^16.3.1",
     "lucide-react": "^0.576.0",
     "next": "14.2.15",
     "prisma": "5.22.0",

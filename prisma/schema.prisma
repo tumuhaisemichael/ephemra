@@ -3,8 +3,17 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  // Provider and connection URL are pulled from environment variables so
+  // you can configure the database on the deployment server.  Example values
+  // (set in `.env`):
+  //
+  //   DATABASE_PROVIDER="postgresql"          // or mysql, sqlite, etc.
+  //   DATABASE_URL="postgresql://user:pass@host:5432/dbname?schema=public"
+  //
+  // Prisma will automatically read `DATABASE_URL` by default; setting
+  // `DATABASE_PROVIDER` is optional but can be useful if you swap engines.
+  provider = env("DATABASE_PROVIDER")
+  url      = env("DATABASE_URL")
 }
 
 model ChatSession {

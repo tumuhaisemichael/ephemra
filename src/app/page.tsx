@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Shield, Lock, Trash2, Zap, MessageSquare, Camera, Phone } from 'lucide-react';
+import { Lock, Trash2, Zap, MessageSquare, Camera, Phone } from 'lucide-react';
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
@@ -27,7 +27,9 @@ export default function Home() {
     <main className="container">
       <div className="hero-section glass">
         <div className="logo-container">
-          <Shield className="logo-icon" size={64} />
+          {/* actual logo file placed in public/; update name if you use a different
+              filename (PNG, SVG, etc.) */}
+          <img src="/logo.png" alt="Ephemra logo" className="logo-img" width={64} height={64} />
           <h1>Ephemra</h1>
           <p className="subtitle">Secure, Ephemeral, End-to-End Encrypted Messaging</p>
         </div>
@@ -90,6 +92,12 @@ export default function Home() {
 
         .logo-icon {
           color: #6366f1;
+          filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.5));
+        }
+
+        .logo-img {
+          display: block;
+          margin: 0 auto;
           filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.5));
         }
 

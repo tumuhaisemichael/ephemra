@@ -315,7 +315,7 @@ export default function ChatPage() {
 
       <header className="chat-header glass">
         <div className="header-left">
-          <ShieldCheck className="text-accent animate-pulse" size={24} />
+          <img src="/logo.png" alt="Ephemra" className="header-logo" width={24} height={24} />
           <div>
             <h1 className="font-mono tracking-tighter">EPHEMRA::SECURE</h1>
             <div className="flex items-center gap-2">
