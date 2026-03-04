@@ -45,6 +45,14 @@ app.prepare().then(() => {
             io.to(sessionId).emit('session-terminated');
         });
 
+        socket.on('typing', (sessionId) => {
+            socket.to(sessionId).emit('user-typing');
+        });
+
+        socket.on('stop-typing', (sessionId) => {
+            socket.to(sessionId).emit('user-stop-typing');
+        });
+
         socket.on('disconnect', () => {
             console.log(`[Socket] User ${socket.id} disconnected`);
         });
