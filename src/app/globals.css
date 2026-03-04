@@ -106,6 +106,97 @@ body::before {
   }
 }
 
+/* Anti-Copy */
+.no-copy {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+@media print {
+  body {
+    display: none !important;
+  }
+}
+
+/* Purge Animation */
+.purge-overlay {
+  position: fixed;
+  inset: 0;
+  background: black;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Monaco', monospace;
+  color: #ff3e3e;
+  gap: 20px;
+}
+
+.purge-glitch {
+  font-size: 3rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 10px;
+  animation: glitchCore 0.2s infinite;
+}
+
+@keyframes glitchCore {
+  0% {
+    transform: translate(2px, 2px);
+  }
+
+  25% {
+    transform: translate(-2px, -2px);
+  }
+
+  50% {
+    transform: translate(2px, -2px);
+  }
+
+  75% {
+    transform: translate(-2px, 2px);
+  }
+
+  100% {
+    transform: translate(0);
+  }
+}
+
+.purge-progress {
+  width: 300px;
+  height: 4px;
+  background: rgba(255, 62, 62, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.purge-bar {
+  height: 100%;
+  background: #ff3e3e;
+  width: 0%;
+  animation: fillingProgress 2s forwards ease-in-out;
+}
+
+@keyframes fillingProgress {
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
+.purge-log {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  max-width: 400px;
+  text-align: center;
+}
+
 .badge-secure {
   font-size: 0.7rem;
   color: var(--accent);
@@ -226,6 +317,24 @@ body::before {
 
 .msg-row.me {
   align-self: flex-end;
+}
+
+.msg-row.system {
+  align-self: center;
+  max-width: 100%;
+  margin: 1rem 0;
+}
+
+.msg-row.system .msg-bubble {
+  background: rgba(16, 185, 129, 0.05) !important;
+  border: 1px dashed rgba(16, 185, 129, 0.2) !important;
+  color: var(--accent) !important;
+  font-family: 'Monaco', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  box-shadow: none;
 }
 
 .msg-row.other {
