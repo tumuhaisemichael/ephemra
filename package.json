@@ -1,0 +1,32 @@
+{
+  "name": "ephemra",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node server.js",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@prisma/client": "5.22.0",
+    "lucide-react": "^0.576.0",
+    "next": "14.2.15",
+    "prisma": "5.22.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^20",
+    "@types/react": "18.3.28",
+    "@types/react-dom": "18.3.7",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "express": "^5.2.1",
+    "typescript": "^5"
+  }
+}
