@@ -137,19 +137,20 @@ export default function ChatPage() {
     const hash = window.location.hash.replace('#', '');
     if (!hash) return;
 
-    let newSocket: Socket | null = null;
+    let socketInstance: Socket | null = null;
     const init = async () => {
       try {
         const key = await generateKey(hash);
         setCryptoKey(key);
 
         // Connect to Socket.IO using explicit URL to ensure proper connection
-        newSocket = io(window.location.origin, {
+        const newSocket = io(window.location.origin, {
           reconnection: true,
           reconnectionDelay: 1000,
           reconnectionDelayMax: 5000,
           reconnectionAttempts: 5
         });
+        socketInstance = newSocket;
 
         // Log connection events for debugging
         newSocket.on('connect', () => {
@@ -273,7 +274,7 @@ export default function ChatPage() {
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
-      newSocket?.disconnect();
+      socketInstance?.disconnect();
     };
   }, [sessionId, pushToast, router]);
 
@@ -675,7 +676,7 @@ export default function ChatPage() {
             <div className="video-container local"><video ref={localVideoRef} autoPlay muted playsInline /><span>LOCAL_FEED</span></div>
             <div className="video-container remote">{remoteStream ? <video ref={remoteVideoRef} autoPlay playsInline /> : <div className="font-mono text-xs animate-pulse">ESTABLISHING_P2P_LINK...</div>}<span>REMOTE_TUNNEL</span></div>
           </div>
-          <button className="btn-danger circular" onClick={endCall}><PhoneOff size={24} /></button>
+          <button className="btn-danger circular" onClick={() => endCall()}><PhoneOff size={24} /></button>
         </div>
       )}
 
