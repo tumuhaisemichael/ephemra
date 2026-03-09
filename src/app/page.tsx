@@ -2,22 +2,27 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Lock, Trash2, Zap, MessageSquare, Camera, Phone } from 'lucide-react';
+import { Lock, Trash2, Zap, AlertCircle } from 'lucide-react';
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
 
   const createSession = async () => {
     setLoading(true);
+    setErrorMessage('');
     try {
       const res = await fetch('/api/session', { method: 'POST' });
+      if (!res.ok) {
+        throw new Error('Session request failed');
+      }
       const { sessionId, sharedSecret } = await res.json();
       // We append the sharedSecret to the hash so it's not sent to the server in subsequent requests
       router.push(`/chat/${sessionId}#${sharedSecret}`);
     } catch (error) {
       console.error('Failed to create session:', error);
-      alert('Failed to create secure session. Please try again.');
+      setErrorMessage('Could not create a secure session. Please retry.');
     } finally {
       setLoading(false);
     }
@@ -38,7 +43,7 @@ export default function Home() {
           <div className="feature-card">
             <Lock size={24} className="feature-icon" />
             <h3>True E2EE</h3>
-            <p>Messages are encrypted in your browser. Even we can't read them.</p>
+            <p>Messages are encrypted in your browser. Even we cannot read them.</p>
           </div>
           <div className="feature-card">
             <Trash2 size={24} className="feature-icon" />
@@ -61,6 +66,12 @@ export default function Home() {
             {loading ? 'Securing Environment...' : 'Start Secure Chat'}
           </button>
           <p className="hint">No accounts. No logs. No trace.</p>
+          {errorMessage && (
+            <p className="inline-error">
+              <AlertCircle size={14} />
+              {errorMessage}
+            </p>
+          )}
         </div>
       </div>
 
@@ -161,6 +172,14 @@ export default function Home() {
         .hint {
           font-size: 0.85rem;
           color: #475569;
+        }
+
+        .inline-error {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          color: #fda4af;
+          font-size: 0.9rem;
         }
 
         @keyframes fadeIn {

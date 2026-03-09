@@ -92,9 +92,15 @@ app.prepare().then(async () => {
     });
 
     io.on('connection', (socket) => {
-        socket.on('join-session', (sessionId) => {
+        let currentSessionId = null;
+
+        socket.on('join-session', async (sessionId) => {
             socket.join(sessionId);
+            currentSessionId = sessionId;
             console.log(`[Socket] User ${socket.id} joined session ${sessionId}`);
+
+            const peers = Array.from(io.sockets.adapter.rooms.get(sessionId) || []).filter((id) => id !== socket.id);
+            socket.emit('session-peers', peers);
             socket.to(sessionId).emit('user-joined', socket.id);
         });
 
@@ -123,6 +129,9 @@ app.prepare().then(async () => {
         });
 
         socket.on('disconnect', () => {
+            if (currentSessionId) {
+                socket.to(currentSessionId).emit('user-left', socket.id);
+            }
             console.log(`[Socket] User ${socket.id} disconnected`);
         });
     });
