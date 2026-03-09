@@ -49,6 +49,23 @@ interface ToastMessage {
   tone: 'info' | 'success' | 'error';
 }
 
+function getIceServers(): RTCIceServer[] {
+  const fallback: RTCIceServer[] = [{ urls: 'stun:stun.l.google.com:19302' }];
+  const raw = process.env.NEXT_PUBLIC_ICE_SERVERS;
+  if (!raw) return fallback;
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return fallback;
+    }
+    return parsed as RTCIceServer[];
+  } catch (error) {
+    console.warn('Invalid NEXT_PUBLIC_ICE_SERVERS JSON. Falling back to default STUN.', error);
+    return fallback;
+  }
+}
+
 export default function ChatPage() {
   const { sessionId } = useParams();
   const router = useRouter();
@@ -82,6 +99,7 @@ export default function ChatPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const callStateRef = useRef(callState);
+  const callConnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const pushToast = useCallback((text: string, tone: ToastMessage['tone'] = 'info') => {
     const id = Date.now() + Math.floor(Math.random() * 1000);
@@ -274,6 +292,9 @@ export default function ChatPage() {
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
+      if (callConnectTimeoutRef.current) {
+        clearTimeout(callConnectTimeoutRef.current);
+      }
       socketInstance?.disconnect();
     };
   }, [sessionId, pushToast, router]);
@@ -392,9 +413,9 @@ export default function ChatPage() {
 
       const peer = new Peer({
         initiator,
-        trickle: false,
+        trickle: true,
         stream,
-        config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }
+        config: { iceServers: getIceServers() }
       });
 
       peer.on('signal', (data) => {
@@ -404,11 +425,19 @@ export default function ChatPage() {
       peer.on('stream', (remote) => {
         setRemoteStream(remote);
         setCallState('active');
+        if (callConnectTimeoutRef.current) {
+          clearTimeout(callConnectTimeoutRef.current);
+          callConnectTimeoutRef.current = null;
+        }
       });
 
       peer.on('connect', () => {
         setCallState('active');
         pushToast('Secure call connected.', 'success');
+        if (callConnectTimeoutRef.current) {
+          clearTimeout(callConnectTimeoutRef.current);
+          callConnectTimeoutRef.current = null;
+        }
       });
 
       peer.on('error', (err) => {
@@ -429,6 +458,14 @@ export default function ChatPage() {
       peerRef.current = peer;
       setIncomingSignal(null);
       setIncomingFromId(null);
+
+      // If ICE negotiation never completes, stop and surface a clear error.
+      callConnectTimeoutRef.current = setTimeout(() => {
+        if (callStateRef.current !== 'active') {
+          pushToast('Call connection timed out. TURN may be required for mobile networks.', 'error');
+          endCall(false);
+        }
+      }, 20000);
     } catch (err) {
       console.error('Start call failed:', err);
       pushToast('Could not access media devices. Check camera/mic permissions.', 'error');
@@ -471,6 +508,10 @@ export default function ChatPage() {
     }
     if (peerRef.current) {
       try { peerRef.current.destroy(); } catch (e) { }
+    }
+    if (callConnectTimeoutRef.current) {
+      clearTimeout(callConnectTimeoutRef.current);
+      callConnectTimeoutRef.current = null;
     }
     const callTarget = remotePeerId || incomingFromId;
     if (notifyPeer && socket && callTarget) {
