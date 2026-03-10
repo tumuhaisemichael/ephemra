@@ -96,3 +96,6 @@ During startup the app:
 ## License
 
 MIT
+
+
+time scheduling of the links
